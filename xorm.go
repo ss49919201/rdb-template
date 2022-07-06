@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/samber/lo"
@@ -16,6 +18,69 @@ func main() {
 	ctx := context.Background()
 	session := db.NewSession().Context(ctx)
 	defer session.Close()
+
+	insertWithTx(session, serializable, "")
+}
+
+type isolationLevel string
+
+const (
+	readUncommitted isolationLevel = "READ UNCOMMITTED"
+	readCommit      isolationLevel = "READ COMMITTED"
+	repeatableRead  isolationLevel = "REPEATABLE READ"
+	serializable    isolationLevel = "SERIALIZABLE"
+)
+
+func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
+	sql := fmt.Sprintf("SET SESSION TRANSACTION ISOLATION LEVEL %s", level)
+	_, err := session.Exec(sql)
+	if err != nil {
+		panic(err)
+	}
+
+	type User struct {
+		ID        string `xorm:"id"`
+		Name      string
+		Count     int
+		UpdatedAt time.Time
+	}
+
+	if err := session.Begin(); err != nil {
+		panic(err)
+	}
+
+	// 処理をロック
+	var a string
+	fmt.Scan(&a)
+
+	// READ UNCOMMITTED だと別トランザクションのコミット前INSERTが見える(ファントムリード)のでここで落ちる
+	// SERIALIZABLE だと別トランザクションと直列化されるのでここでブロック
+	if exsit, err := session.Table("users").Exist(&User{ID: id}); err != nil {
+		panic(err)
+	} else if exsit {
+		panic("already exists A")
+	}
+
+	// 処理をロック
+	fmt.Scan(&a)
+
+	// READ COMMITTED だと別トランザクションのコミット後INSERTが見える(ファントムリード)のでここで落ちる
+	if exsit, err := session.Table("users").Exist(&User{ID: id}); err != nil {
+		panic(err)
+	} else if exsit {
+		panic("already exists B")
+	}
+
+	// REPEATABLE READ だと別トランザクションのコミット前後INSERTが見えないのでここで落ちる
+	if _, err := session.Table("users").Insert(&User{ID: id, Name: "samber", Count: 1, UpdatedAt: time.Now()}); err != nil {
+		panic(err)
+	}
+
+	fmt.Scan(&a)
+
+	if err := session.Commit(); err != nil {
+		panic(err)
+	}
 }
 
 func newMySQLClient() *xorm.Engine {
