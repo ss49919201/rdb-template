@@ -45,6 +45,7 @@ func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 		UpdatedAt time.Time
 	}
 
+	// トランザクション開始
 	if err := session.Begin(); err != nil {
 		panic(err)
 	}
@@ -53,6 +54,7 @@ func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 	var a string
 	fmt.Scan(&a)
 
+	// 存在チェックA
 	// READ UNCOMMITTED だと別トランザクションのコミット前INSERTが見える(ファントムリード)のでここで落ちる
 	// SERIALIZABLE だと別トランザクションと直列化されるのでここでブロック
 	if exsit, err := session.Table("users").Exist(&User{ID: id}); err != nil {
@@ -64,6 +66,7 @@ func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 	// 処理をロック
 	fmt.Scan(&a)
 
+	// 存在チェックB
 	// READ COMMITTED だと別トランザクションのコミット後INSERTが見える(ファントムリード)のでここで落ちる
 	if exsit, err := session.Table("users").Exist(&User{ID: id}); err != nil {
 		panic(err)
@@ -71,13 +74,16 @@ func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 		panic("already exists B")
 	}
 
+	// 挿入
 	// REPEATABLE READ だと別トランザクションのコミット前後INSERTが見えないのでここで落ちる
 	if _, err := session.Table("users").Insert(&User{ID: id, Name: "samber", Count: 1, UpdatedAt: time.Now()}); err != nil {
 		panic(err)
 	}
 
+	// 処理をロック
 	fmt.Scan(&a)
 
+	// コミット
 	if err := session.Commit(); err != nil {
 		panic(err)
 	}
