@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -18,8 +19,6 @@ func main() {
 	ctx := context.Background()
 	session := db.NewSession().Context(ctx)
 	defer session.Close()
-
-	insertWithTx(session, serializable, "")
 }
 
 type isolationLevel string
@@ -87,6 +86,39 @@ func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 	if err := session.Commit(); err != nil {
 		panic(err)
 	}
+}
+
+func serializableUpdate(session *xorm.Session) {
+	for i := 0; i < 10; i++ {
+		fmt.Println(decrCount(session, "10"))
+	}
+}
+
+func concurrencyUpdate(session *xorm.Session) {
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			fmt.Println(decrCount(session, "10"))
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
+
+func decrCount(session *xorm.Session, key string) error {
+	if err := session.Begin(); err != nil {
+		return err
+	}
+
+	if _, err := session.Table("users").
+		Where("id = ?", key).
+		Decr("count").
+		Update(struct{}{}); err != nil {
+		return err
+	}
+
+	return session.Commit()
 }
 
 func newMySQLClient() *xorm.Engine {
