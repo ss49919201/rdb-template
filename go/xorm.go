@@ -13,14 +13,6 @@ import (
 	"xorm.io/xorm/log"
 )
 
-func main() {
-	db := newMySQLClient()
-
-	ctx := context.Background()
-	session := db.NewSession().Context(ctx)
-	defer session.Close()
-}
-
 type isolationLevel string
 
 const (
@@ -29,6 +21,16 @@ const (
 	repeatableRead  isolationLevel = "REPEATABLE READ"
 	serializable    isolationLevel = "SERIALIZABLE"
 )
+
+func main() {
+	engine := newMySQLClient()
+
+	ctx := context.Background()
+	session := engine.NewSession().Context(ctx)
+	defer session.Close()
+
+	decrCount(session, "10")
+}
 
 func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 	sql := fmt.Sprintf("SET SESSION TRANSACTION ISOLATION LEVEL %s", level)
@@ -88,18 +90,20 @@ func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 	}
 }
 
-func serializableUpdate(session *xorm.Session) {
+func serializableUpdate(engine *xorm.Engine, key string) {
+	ctx := context.Background()
 	for i := 0; i < 10; i++ {
-		fmt.Println(decrCount(session, "10"))
+		fmt.Println(decrCount(engine.NewSession().Context(ctx), key))
 	}
 }
 
-func concurrencyUpdate(session *xorm.Session) {
+func concurrencyUpdate(engine *xorm.Engine, key string) {
+	ctx := context.Background()
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func() {
-			fmt.Println(decrCount(session, "10"))
+			fmt.Println(decrCount(engine.NewSession().Context(ctx), key))
 			wg.Done()
 		}()
 	}
@@ -113,6 +117,13 @@ func decrCount(session *xorm.Session, key string) error {
 
 	if _, err := session.Table("users").
 		Where("id = ?", key).
+		Exist(); err != nil {
+		return err
+	}
+
+	if _, err := session.Table("users").
+		Where("id = ?", key).
+		Where("name = ?", "samber").
 		Decr("count").
 		Update(struct{}{}); err != nil {
 		return err
