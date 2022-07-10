@@ -12,7 +12,8 @@ import (
 )
 
 func main() {
-	db, err := gorm.Open(mysql.Open("user:password@tcp(localhost:3306)/rdb"), &gorm.Config{
+	// parseTime=true が無いと Scan error on column index 3, name "updated_at": unsupported Scan, storing driver.Value type []uint8 into type *time.Time
+	db, err := gorm.Open(mysql.Open("user:password@tcp(localhost:3306)/rdb?parseTime=true"), &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 			logger.Config{
@@ -28,7 +29,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	insertWithTx(ctx, db, "1")
+	decreaseCount(ctx, db, "1")
 }
 
 func insertWithTx(ctx context.Context, db *gorm.DB, key string) {
@@ -56,6 +57,37 @@ func insertWithTx(ctx context.Context, db *gorm.DB, key string) {
 			ID:        key,
 			Name:      "name",
 			Count:     1,
+			UpdatedAt: time.Now(),
+		}).Error
+	}); err != nil {
+		panic(err)
+	}
+}
+
+func decreaseCount(ctx context.Context, db *gorm.DB, key string) {
+	type User struct {
+		ID        string `xorm:"id"`
+		Name      string
+		Count     int
+		UpdatedAt time.Time
+	}
+
+	tx := db.WithContext(ctx)
+	if err := tx.Transaction(func(tx *gorm.DB) error {
+		var u *User
+		if err := tx.Where("id = ?", key).
+			Find(&u).Error; err != nil {
+			return err
+		}
+
+		if u == nil {
+			panic("not exists")
+		}
+
+		return tx.Updates(&User{
+			ID:        key,
+			Name:      "name",
+			Count:     u.Count - 1,
 			UpdatedAt: time.Now(),
 		}).Error
 	}); err != nil {
