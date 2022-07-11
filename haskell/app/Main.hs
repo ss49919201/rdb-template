@@ -1,8 +1,9 @@
-module Main where
+{-# LANGUAGE OverloadedStrings #-}
 
-import qualified MyLib (someFunc)
+import Database.MySQL.Simple
 
 main :: IO ()
 main = do
-  putStrLn "Hello, Haskell!"
-  MyLib.someFunc
+  conn <- connect defaultConnectInfo {connectHost = "127.0.0.1", connectUser = "user", connectPassword = "password", connectDatabase = "rdb"}
+  [Only i] <- query_ conn "select * from rdb.users"
+  print (i :: Int)
