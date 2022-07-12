@@ -51,6 +51,18 @@ func getOne(ctx context.Context, db *gorm.DB, key string) (*User, error) {
 	return u, nil
 }
 
+func exist(ctx context.Context, db *gorm.DB, key string) (bool, error) {
+	var n int64
+	if err := db.WithContext(ctx).
+		Table("users").
+		Where("id = ?", key).
+		Count(&n).Error; err != nil {
+		return false, err
+	}
+
+	return n > 0, nil
+}
+
 func insertWithTx(ctx context.Context, db *gorm.DB, key string) {
 	type User struct {
 		ID        string `xorm:"id"`
@@ -61,14 +73,12 @@ func insertWithTx(ctx context.Context, db *gorm.DB, key string) {
 
 	tx := db.WithContext(ctx)
 	if err := tx.Transaction(func(tx *gorm.DB) error {
-		var count int64
-		if err := tx.Model(&User{ID: key}).
-			Count(&count).
-			Error; err != nil {
+		exist, err := exist(ctx, tx, key)
+		if err != nil {
 			return err
 		}
 
-		if count > 0 {
+		if exist {
 			panic("already exsit")
 		}
 
