@@ -11,6 +11,13 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+type User struct {
+	ID        string `xorm:"id"`
+	Name      string
+	Count     int
+	UpdatedAt time.Time
+}
+
 func main() {
 	// parseTime=true が無いと Scan error on column index 3, name "updated_at": unsupported Scan, storing driver.Value type []uint8 into type *time.Time
 	db, err := gorm.Open(mysql.Open("user:password@tcp(localhost:3306)/rdb?parseTime=true"), &gorm.Config{
@@ -30,6 +37,18 @@ func main() {
 
 	ctx := context.Background()
 	decreaseCount(ctx, db, "1")
+}
+
+func getOne(ctx context.Context, db *gorm.DB, key string) (*User, error) {
+	var u *User
+	if err := db.WithContext(ctx).
+		Table("users").
+		Where("id = ?", key).
+		Find(&u).Error; err != nil {
+		return nil, err
+	}
+
+	return u, nil
 }
 
 func insertWithTx(ctx context.Context, db *gorm.DB, key string) {
