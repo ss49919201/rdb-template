@@ -6,5 +6,6 @@ create table
         `name` VARCHAR(20) NOT NULL,
         `count` INT NOT NULL,
         `updated_at` Datetime DEFAULT NULL,
-        PRIMARY KEY (`id`)
+        PRIMARY KEY (`id`),
+        UNIQUE `unique_name_count` (`name`, `count`)
     ) DEFAULT CHARSET = utf8 COLLATE = utf8_bin;
