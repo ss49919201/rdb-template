@@ -8,6 +8,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/s-beats/rdb-template/model"
 	"github.com/samber/lo"
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
@@ -58,7 +59,7 @@ func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 	// 存在チェックA
 	// READ UNCOMMITTED だと別トランザクションのコミット前INSERTが見える(ファントムリード)のでここで落ちる
 	// SERIALIZABLE だと別トランザクションと直列化されるのでここでブロック
-	if exsit, err := session.Table("users").Exist(&User{ID: id}); err != nil {
+	if exsit, err := session.Table("users").Exist(&model.User{ID: id}); err != nil {
 		panic(err)
 	} else if exsit {
 		panic("already exists A")
@@ -69,7 +70,7 @@ func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 
 	// 存在チェックB
 	// READ COMMITTED だと別トランザクションのコミット後INSERTが見える(ファントムリード)のでここで落ちる
-	if exsit, err := session.Table("users").Exist(&User{ID: id}); err != nil {
+	if exsit, err := session.Table("users").Exist(&model.User{ID: id}); err != nil {
 		panic(err)
 	} else if exsit {
 		panic("already exists B")
@@ -77,7 +78,7 @@ func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
 
 	// 挿入
 	// REPEATABLE READ だと別トランザクションのコミット前後INSERTが見えないのでここで落ちる
-	if _, err := session.Table("users").Insert(&User{ID: id, Name: "samber", Count: 1, UpdatedAt: time.Now()}); err != nil {
+	if _, err := session.Table("users").Insert(&model.User{ID: id, Name: "samber", Count: 1, UpdatedAt: time.Now()}); err != nil {
 		panic(err)
 	}
 
