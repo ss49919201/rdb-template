@@ -4,4 +4,4 @@ dc-up:
 
 .PHONY: exec-sh
 exec-sh:
-	docker exec -it rdb /bin/bash
+	docker exec -it rdb /bin/bash -c "mysql -u user -ppassword"
