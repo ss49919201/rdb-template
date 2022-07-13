@@ -6,17 +6,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/s-beats/rdb-template/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
-
-type User struct {
-	ID        string `xorm:"id"`
-	Name      string
-	Count     int
-	UpdatedAt time.Time
-}
 
 func main() {
 	// parseTime=true が無いと Scan error on column index 3, name "updated_at": unsupported Scan, storing driver.Value type []uint8 into type *time.Time
@@ -39,8 +33,8 @@ func main() {
 	decreaseCount(ctx, db, "1")
 }
 
-func getOne(ctx context.Context, db *gorm.DB, key string) (*User, error) {
-	var u *User
+func getOne(ctx context.Context, db *gorm.DB, key string) (*model.User, error) {
+	var u *model.User
 	if err := db.WithContext(ctx).
 		Table("users").
 		Where("id = ?", key).
@@ -64,13 +58,6 @@ func exist(ctx context.Context, db *gorm.DB, key string) (bool, error) {
 }
 
 func insertWithTx(ctx context.Context, db *gorm.DB, key string) {
-	type User struct {
-		ID        string `xorm:"id"`
-		Name      string
-		Count     int
-		UpdatedAt time.Time
-	}
-
 	tx := db.WithContext(ctx)
 	if err := tx.Transaction(func(tx *gorm.DB) error {
 		exist, err := exist(ctx, tx, key)
@@ -82,7 +69,7 @@ func insertWithTx(ctx context.Context, db *gorm.DB, key string) {
 			panic("already exsit")
 		}
 
-		return tx.Create(&User{
+		return tx.Create(&model.User{
 			ID:        key,
 			Name:      "name",
 			Count:     1,
@@ -94,16 +81,9 @@ func insertWithTx(ctx context.Context, db *gorm.DB, key string) {
 }
 
 func decreaseCount(ctx context.Context, db *gorm.DB, key string) {
-	type User struct {
-		ID        string `xorm:"id"`
-		Name      string
-		Count     int
-		UpdatedAt time.Time
-	}
-
 	tx := db.WithContext(ctx)
 	if err := tx.Transaction(func(tx *gorm.DB) error {
-		var u *User
+		var u *model.User
 		if err := tx.Where("id = ?", key).
 			Find(&u).Error; err != nil {
 			return err
@@ -113,7 +93,7 @@ func decreaseCount(ctx context.Context, db *gorm.DB, key string) {
 			panic("not exists")
 		}
 
-		return tx.Updates(&User{
+		return tx.Updates(&model.User{
 			ID:        key,
 			Name:      "name",
 			Count:     u.Count - 1,
