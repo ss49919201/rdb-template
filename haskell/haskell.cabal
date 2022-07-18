@@ -42,9 +42,6 @@ executable haskell
     build-depends:
         base ^>=4.14.3.0
         , haskell
-        , http-types
-        , wai
-        , warp
         , mysql-simple
 
     hs-source-dirs:   app
