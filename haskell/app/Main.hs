@@ -14,3 +14,12 @@ ping conn = query_ conn "select 2 + 2"
 
 insert :: Connection -> IO [Only Int]
 insert conn = query_ conn "INSERT INTO users (id) VALUES (`1`), (`2`), (`3`)"
+
+bigin :: Connection -> IO [Only Int]
+bigin conn = query_ conn "BEGIN"
+
+rollBack :: Connection -> IO [Only Int]
+rollBack conn = query_ conn "ROLLBACK"
+
+commit :: Connection -> IO [Only Int]
+commit conn = query_ conn "COMMIT"
