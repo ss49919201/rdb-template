@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/samber/lo v1.25.0
+	github.com/samber/lo v1.27.0
 	gorm.io/driver/mysql v1.3.4
 	gorm.io/gorm v1.23.8
 	xorm.io/xorm v1.3.1

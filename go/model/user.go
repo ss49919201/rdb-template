@@ -8,3 +8,7 @@ type User struct {
 	Count     int
 	UpdatedAt time.Time
 }
+
+func (u User) TableName() string {
+	return "users"
+}

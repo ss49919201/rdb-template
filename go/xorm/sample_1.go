@@ -30,7 +30,61 @@ func main() {
 	session := engine.NewSession().Context(ctx)
 	defer session.Close()
 
-	decrCount(session, "10")
+	var u model.User
+	session.Begin()
+	has, err := session.Where("id = ?", 1).Get(&u)
+	// has, err := session.Where("id = ?", 1).ForUpdate().Get(&u)
+	if err != nil || !has {
+		fmt.Println(err)
+		panic("failed to get")
+	}
+	if u.Count > 0 {
+		if _, err := session.
+			Where("id = ?", "1").Decr("count").Update(&model.User{}); err != nil {
+			fmt.Println(err)
+			panic("failed to update")
+		}
+	}
+	time.Sleep(30 * time.Second)
+	session.Commit()
+}
+
+func badExample(session *xorm.Session) {
+	var u model.User
+	session.Begin()
+	has, err := session.Where("id = ?", 1).Get(&u)
+	if err != nil || !has {
+		fmt.Println(err)
+		panic("failed to get")
+	}
+	// Countが1の場合に複数セッションから同時に更新されると-1になる可能性がある
+	if u.Count > 0 {
+		if _, err := session.
+			Where("id = ?", "1").Decr("count").Update(&model.User{}); err != nil {
+			fmt.Println(err)
+			panic("failed to update")
+		}
+	}
+	session.Commit()
+}
+
+func goodExample(session *xorm.Session) {
+	var u model.User
+	session.Begin()
+	has, err := session.Where("id = ?", 1).ForUpdate().Get(&u)
+	if err != nil || !has {
+		fmt.Println(err)
+		panic("failed to get")
+	}
+	// コミット又はロールバックされるまでロックされるので、Countが1の場合に複数セッションから同時に更新されることはない
+	if u.Count > 0 {
+		if _, err := session.
+			Where("id = ?", "1").Decr("count").Update(&model.User{}); err != nil {
+			fmt.Println(err)
+			panic("failed to update")
+		}
+	}
+	session.Commit()
 }
 
 func insertWithTx(session *xorm.Session, level isolationLevel, id string) {
