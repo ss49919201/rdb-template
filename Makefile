@@ -4,7 +4,7 @@ dc-up:
 
 .PHONY: exec-sh
 exec-sh:dc-up
-	docker exec -it rdb /bin/bash -c "mysql -u root -ppassword"
+	docker exec -it rdb /bin/bash -c "mysql -u root -ppassword rdb"
 
 .PHONEY: init-db
 init-db:dc-up
