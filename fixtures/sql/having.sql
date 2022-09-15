@@ -9,3 +9,8 @@
 /* Group by する name だけ指定できる */
 
 SELECT `name` FROM `users` GROUP BY `name` HAVING COUNT(*) > 1;
+
+SELECT name, sum(count)
+FROM users
+GROUP BY name
+HAVING sum(count) > 1;
