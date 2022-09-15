@@ -1,0 +1,1 @@
+select user_id,count(id) from tasks group by user_id;
