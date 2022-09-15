@@ -1,10 +1,10 @@
-select user_id,count(id) from tasks group by user_id;
+SELECT user_id,count(id) FROM tasks GROUP BY user_id;
 
-select
+SELECT
     name,
     count(name),
     sum(count),
     max(count),
     min(count)
-from users
-group by name;
+FROM users
+GROUP BY name;
