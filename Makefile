@@ -2,9 +2,17 @@
 dc-up:
 	docker compose up -d
 
-.PHONY: exec-sh
+.PHONY: exec
+exec:dc-up
+	docker exec -it rdb /bin/bash
+
+.PHONY: exec-mysql
 exec-sh:dc-up
 	docker exec -it rdb /bin/bash -c "mysql -u root -ppassword rdb"
+
+.PHONY: which
+which:dc-up
+	docker exec -i rdb sh /opt/mysql/which.sh
 
 .PHONEY: init-db
 init-db:dc-up
