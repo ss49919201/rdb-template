@@ -22,7 +22,7 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	update(context.Background(), db)
+	updateWithoutDefaultTX(context.Background(), db)
 }
 
 func getOne(ctx context.Context, db *gorm.DB, key string) (*model.User, error) {
@@ -72,8 +72,14 @@ func insertWithTx(ctx context.Context, db *gorm.DB, key string) {
 	}
 }
 
-func update(ctx context.Context, db *gorm.DB) {
-	tx := db.Session(&gorm.Session{SkipDefaultTransaction: true, Context: ctx})
+func updateWithoutDefaultTX(ctx context.Context, db *gorm.DB) {
+	tx := db.Session(
+		&gorm.Session{
+			Context:                ctx,
+			SkipDefaultTransaction: true,
+		},
+	)
+
 	var user *model.User
 	err := tx.First(&user, 1).Error
 	if err != nil {
@@ -82,7 +88,7 @@ func update(ctx context.Context, db *gorm.DB) {
 		}
 	}
 	if !lo.IsEmpty(*user) {
-		if err := tx.Model(&user).Update("name", "name").Error; err != nil {
+		if err := tx.Model(&user).Update("name", "HOGE").Error; err != nil {
 			panic(err)
 		}
 	}
@@ -98,7 +104,7 @@ func decreaseCount(ctx context.Context, db *gorm.DB, key string) {
 		}
 
 		if u == nil {
-			panic("not exists")
+			return errors.New("not found")
 		}
 
 		return tx.Updates(&model.User{
@@ -132,6 +138,5 @@ func newMySQLClient() (*gorm.DB, error) {
 				Colorful:                  true,        // Disable color
 			},
 		),
-		SkipDefaultTransaction: true,
 	})
 }
