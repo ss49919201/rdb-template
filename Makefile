@@ -7,7 +7,7 @@ exec:dc-up
 	docker exec -it rdb /bin/bash
 
 .PHONY: exec-mysql
-exec-sh:dc-up
+exec-mysql:dc-up
 	docker exec -it rdb /bin/bash -c "mysql -u root -ppassword rdb"
 
 .PHONY: which
