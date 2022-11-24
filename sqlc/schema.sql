@@ -1,0 +1,7 @@
+CREATE TABLE
+    books (
+        id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+        title VARCHAR(250) NOT NULL,
+        version INT UNSIGNED NOT NULL DEFAULT 1,
+        published_at DATETIME NOT NULL
+    );
