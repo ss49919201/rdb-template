@@ -1,4 +1,4 @@
-module github.com/s-beats/rdb-template
+module github.com/ss49919201/rdb-template
 
 go 1.18
 

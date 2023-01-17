@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/s-beats/rdb-template/config"
+	"github.com/ss49919201/rdb-template/config"
 )
 
 func main() {
@@ -20,3 +20,7 @@ func main() {
 func ping(db *sql.DB) error {
 	return db.Ping()
 }
+
+// TODO
+func getUser()
+func getUserForUpdate()

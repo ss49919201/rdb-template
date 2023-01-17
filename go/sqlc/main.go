@@ -8,8 +8,8 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/s-beats/rdb-template/config"
-	"github.com/s-beats/rdb-template/sqlc/book"
+	"github.com/ss49919201/rdb-template/config"
+	"github.com/ss49919201/rdb-template/sqlc/book"
 )
 
 func exit1(err error) {

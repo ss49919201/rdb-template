@@ -8,9 +8,9 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/s-beats/rdb-template/config"
-	"github.com/s-beats/rdb-template/model"
 	"github.com/samber/lo"
+	"github.com/ss49919201/rdb-template/config"
+	"github.com/ss49919201/rdb-template/model"
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
 )

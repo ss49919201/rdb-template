@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/s-beats/rdb-template/config"
-	"github.com/s-beats/rdb-template/model"
+	"github.com/ss49919201/rdb-template/config"
+	"github.com/ss49919201/rdb-template/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
