@@ -8,6 +8,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/s-beats/rdb-template/config"
 	"github.com/s-beats/rdb-template/model"
 	"github.com/samber/lo"
 	"xorm.io/xorm"
@@ -189,7 +190,7 @@ func decrCount(session *xorm.Session, key string) error {
 
 func newMySQLClient() *xorm.Engine {
 	// generate client
-	db, err := xorm.NewEngine("mysql", "user:password@tcp(localhost:3306)/rdb")
+	db, err := xorm.NewEngine("mysql", config.DSN())
 	if err != nil {
 		panic(err)
 	}

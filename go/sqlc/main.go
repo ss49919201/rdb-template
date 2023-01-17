@@ -8,6 +8,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/s-beats/rdb-template/config"
 	"github.com/s-beats/rdb-template/sqlc/book"
 )
 
@@ -19,7 +20,7 @@ func exit1(err error) {
 func main() {
 	ctx := context.Background()
 
-	db, err := sql.Open("mysql", "user:password@tcp(localhost:3306)/rdb?parseTime=true")
+	db, err := sql.Open("mysql", config.DSN())
 	if err != nil {
 		exit1(err)
 	}
