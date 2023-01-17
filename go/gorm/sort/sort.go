@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	driverMySQL "github.com/go-sql-driver/mysql"
 	"github.com/s-beats/rdb-template/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -22,7 +23,16 @@ func main() {
 
 // parseTime=true が無いと Scan error on column index 3, name "updated_at": unsupported Scan, storing driver.Value type []uint8 into type *time.Time
 func newDB() *gorm.DB {
-	db, err := gorm.Open(mysql.Open("user:password@tcp(localhost:3306)/rdb?parseTime=true"), &gorm.Config{
+	// parseTime=true が無いと Scan error on column index 3, name "updated_at": unsupported Scan, storing driver.Value type []uint8 into type *time.Time
+	config := &driverMySQL.Config{
+		User:      "user",
+		Passwd:    "password",
+		Net:       "tcp",
+		Addr:      "localhost:3306",
+		DBName:    "rdb",
+		ParseTime: true,
+	}
+	db, err := gorm.Open(mysql.Open(config.FormatDSN()), &gorm.Config{
 		Logger: logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 			logger.Config{
