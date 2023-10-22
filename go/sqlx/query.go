@@ -10,6 +10,7 @@ func QueryWithPrepare(db *sqlx.DB) []map[string]any {
 	if err != nil {
 		panic(err)
 	}
+	defer stmt.Close()
 	rows, err := stmt.Queryx()
 	if err != nil {
 		panic(err)
