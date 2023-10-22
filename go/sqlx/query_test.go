@@ -26,10 +26,13 @@ func TestQueryWithPrepare(t *testing.T) {
 
 	t.Run("Type is int64", func(t *testing.T) {
 		result := QueryWithPrepare(db)
-		if assert.Greater(t, len(result), 0) {
-			_, ok := result[0]["id"].(int64)
-			assert.True(t, ok)
-		}
+		assert.Equal(
+			t,
+			[]map[string]any{
+				{"id": int64(1)},
+			},
+			result,
+		)
 	})
 }
 
@@ -51,9 +54,12 @@ func TestQuery(t *testing.T) {
 
 	t.Run("Type is int64", func(t *testing.T) {
 		result := Query(db)
-		if assert.Greater(t, len(result), 0) {
-			_, ok := result[0]["id"].([]byte)
-			assert.True(t, ok)
-		}
+		assert.Equal(
+			t,
+			[]map[string]any{
+				{"id": []byte("1")},
+			},
+			result,
+		)
 	})
 }
