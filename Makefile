@@ -1,6 +1,14 @@
-.PHONY: dc-up
-dc-up:
-	docker compose up -d
+.PHONY: dc-up-8.0
+dc-up-8.0:
+	VERSION="8.0" docker compose up -d
+
+.PHONY: dc-up-5.7
+dc-up-5.7:
+	VERSION="5.7" docker compose up -d
+
+.PHONY: dc-down
+dc-down:
+	docker compose down
 
 .PHONY: exec
 exec:dc-up
