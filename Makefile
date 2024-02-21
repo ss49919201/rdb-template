@@ -11,17 +11,17 @@ dc-down:
 	docker compose down
 
 .PHONY: exec
-exec:dc-up
+exec:dc-up-8.0
 	docker exec -it rdb /bin/bash
 
 .PHONY: exec-mysql
-exec-mysql:dc-up
+exec-mysql:dc-up-8.0
 	docker exec -it rdb /bin/bash -c "mysql -u root -ppassword rdb"
 
 .PHONY: which
-which:dc-up
+which:dc-up-8.0
 	docker exec -i rdb sh /opt/mysql/which.sh
 
 .PHONEY: init-db
-init-db:dc-up
+init-db:dc-up-8.0
 	docker exec -i rdb sh /opt/mysql/setup.sh
